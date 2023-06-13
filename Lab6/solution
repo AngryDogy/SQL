@@ -1,0 +1,40 @@
+
+SELECT d.SalesOrderID, d.ProductID,
+d.OrderQty * d.UnitPrice/sum(d.OrderQty * d.UnitPrice)
+OVER(PARTITION BY d.SalesOrderID)
+FROM Sales.SalesOrderDetail AS d
+
+
+
+SELECT p.ProductSubcategoryID, p.ProductID, p.ListPrice, p.ListPrice - min(p.ListPrice)
+OVER(PARTITION BY p.ProductSubcategoryID)
+FROM Production.Product as p
+
+
+
+SELECT h.CustomerID, h.SalesOrderID, ROW_NUMBER()
+over (PARTITION BY h.CustomerID order by h.OrderDate)
+FROM Sales.SalesOrderHeader as h
+
+
+SELECT p.ProductSubcategoryID, p.ProductID
+FROM Production.Product as p
+GROUP BY p.ProductSubcategoryID, p.ProductID
+HAVING p.ListPrice > AVG(p.ListPrice)
+
+
+
+with tmp(productId, name, qnty, number)
+AS (SELECT p.ProductID, p.Name, d.OrderQty, ROW_NUMBER()
+    over (PARTITION BY p.ProductID order by h.OrderDate desc)
+    FROM Production.Product as p
+    INNER JOIN Sales.SalesOrderDetail as d
+    ON d.ProductID = p.ProductID
+    INNER JOIN Sales.SalesOrderHeader as h
+    ON h.SalesOrderID = d.SalesOrderID)
+SELECT productId, name, avg(qnty)
+FROM tmp
+WHERE number <= 3
+GROUP BY productId, name
+
+

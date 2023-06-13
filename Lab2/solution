@@ -1,0 +1,81 @@
+SELECT p.Color, COUNT(DISTINCT p.ProductID) AS 'AMOUNT'
+FROM Production.Product AS p
+WHERE p.ListPrice >= 30 AND p.Color IS NOT NULL
+GROUP BY p.Color
+
+SELECT p.Color
+FROM Production.Product as p
+GROUP BY  p.Color
+HAVING MIN(p.ListPrice) > 100
+
+SELECT p.ProductSubcategoryID, COUNT(p.ProductID) AS 'AMOUNT'
+FROM Production.Product AS p
+WHERE p.ProductSubcategoryID IS NOT NULL
+GROUP BY p.ProductSubcategoryID
+
+SELECT p.ProductID, COUNT(p.SalesOrderDetailID) AS 'AMOUNT'
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.ProductID
+
+
+SELECT p.ProductID
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.ProductID
+HAVING COUNT(p.SalesOrderDetailID) > 5
+
+SELECT p.CustomerID
+FROM Sales.SalesOrderHeader AS p
+GROUP BY p.CustomerID, p.OrderDate
+HAVING COUNT(p.SalesOrderID) > 1
+
+SELECT p.SalesOrderID
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.SalesOrderID
+HAVING COUNT(DISTINCT p.ProductID) > 3
+
+SELECT p.ProductID
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.ProductID
+HAVING COUNT(p.SalesOrderDetailID) > 3
+
+SELECT p.ProductID, COUNT(p.SalesOrderDetailID) as 'Amount'
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.ProductID
+HAVING COUNT(p.SalesOrderDetailID) = 3 OR COUNT(p.SalesOrderDetailID) = 5
+
+SELECT p.ProductSubcategoryID
+FROM Production.Product AS p
+WHERE p.ProductSubcategoryID IS NOT NULL
+GROUP BY p.ProductSubcategoryID
+HAVING Count(p.ProductID) > 10
+
+SELECT p.ProductID
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.ProductID
+HAVING MAX(p.OrderQty) = 1
+
+SELECT TOP 1 p.SalesOrderID, COUNT(DISTINCT p.ProductID) AS 'Amount'
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.SalesOrderID
+ORDER BY Amount desc
+
+SELECT TOP 1 p.SalesOrderID, SUM(p.OrderQty * p .UnitPrice) AS 'Sum'
+FROM Sales.SalesOrderDetail AS p
+GROUP BY p.SalesOrderID
+ORDER BY Sum desc
+
+SELECT p.ProductSubcategoryID, COUNT(p.ProductID)
+FROM Production.Product AS p
+WHERE p.ProductSubcategoryID IS NOT NULL AND p.Color IS NOT NULL
+GROUP BY p.ProductSubcategoryID
+
+SELECT p.Color, Count(p.ProductID) AS 'Amount'
+FROM Production.Product AS p
+GROUP BY p.Color
+ORDER BY Amount desc
+
+SELECT p.ProductID
+FROM Sales.SalesOrderDetail AS p
+WHERE p.OrderQty > 1
+GROUP BY p.ProductID
+HAVING COUNT(DISTINCT p.SalesOrderID) > 2

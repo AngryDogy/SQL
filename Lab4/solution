@@ -1,0 +1,191 @@
+SELECT p.Name
+FROM Production.Product as p
+WHERE p.ProductID = (
+    SELECT TOP 1 s.ProductId
+    FROM Sales.SalesOrderDetail as s
+    GROUP BY s.ProductId
+    ORDER BY COUNT(ProductID) DESC
+    )
+
+SELECT c.CustomerID
+FROM Sales.Customer as c
+WHERE c.CustomerID = (
+    SELECT h.CustomerID
+    FROM Sales.SalesOrderHeader as h
+    WHERE h.SalesOrderID = (
+        SELECT TOP 1 d.SalesOrderID
+        FROM SALES.SalesOrderDetail AS d
+        GROUP BY d.SalesOrderID
+        ORDER BY SUM(d.UnitPrice * d.OrderQty) desc
+        )
+    )
+
+
+SELECT TOP 1 d.ProductID, COUNT(h.CustomerID) AS 'AMOUNT'
+FROM Sales.SalesOrderDetail as d
+INNER JOIN Sales.SalesOrderHeader as h
+ON d.SalesOrderID = h.SalesOrderID
+GROUP BY d.ProductID
+having count(h.CustomerID) = 1
+
+SELECT p.ProductID
+FROM Production.Product as p
+WHERE p.ListPrice > (
+    SELECT AVG(s.ListPrice)
+    FROM Production.Product as s
+    where p.ProductSubcategoryID = s.ProductSubcategoryID
+)
+
+SELECT d.ProductID
+FROM Sales.SalesOrderDetail as d INNER JOIN
+Sales.SalesOrderHeader as h
+ON h.SalesOrderID = d.SalesOrderID
+WHERE h.CustomerID IN (
+    SELECT h1.CustomerID
+    FROM Sales.SalesOrderHeader as h1 INNER JOIN
+    Sales.SalesOrderDetail as d1
+    ON d1.SalesOrderID = h1.SalesOrderID INNER JOIN
+    Production.Product as p
+    ON p.ProductID = d1.ProductID
+    GROUP BY h1.CustomerID
+    HAVING COUNT(distinct p.Color) = 1
+)
+GROUP BY d.ProductID
+having COUNT(distinct h.CustomerID) > 1
+
+SELECT distinct d.ProductID
+FROM Sales.SalesOrderDetail as d INNER JOIN
+Sales.SalesOrderHeader as h
+ON h.SalesOrderID = d.SalesOrderID
+WHERE d.ProductID in (
+    SELECT distinct d1.ProductID
+    FROM Sales.SalesOrderHeader as h1 INNER JOIN
+    Sales.SalesOrderDetail as d1
+    ON h1.SalesOrderID = d1.SalesOrderID
+    GROUP BY h1.CustomerID, d1.ProductID
+    HAVING COUNT (distinct h1.SalesOrderID) = (
+        SELECT COUNT(DISTINCT h2.SalesOrderID)
+        FROM Sales.SalesOrderHeader as h2
+        WHERE h1.CustomerID = h2.CustomerID
+    )
+
+)
+
+
+SELECT distinct h.CustomerID
+FROM Sales.SalesOrderHeader as h
+WHERE h.CustomerID IN (
+    SELECT DISTINCT h1.CustomerID
+    FROM Sales.SalesOrderDetail as d1 INNER JOIN
+    Sales.SalesOrderHeader as h1
+    ON d1.SalesOrderID = h1.SalesOrderID
+    group by h1.CustomerID, d1.ProductID
+    having count(distinct  h.SalesOrderID) = (
+        SELECT COUNT(DISTINCT h2.SalesOrderID)
+        FROM Sales.SalesOrderHeader as h2
+        WHERE h1.CustomerID = h2.CustomerID
+    )
+)
+
+
+SELECT d.ProductID
+FROM SALES.SalesOrderDetail AS d inner join
+Sales.SalesOrderHeader as h
+ON d.SalesOrderID = h.SalesOrderID
+GROUP BY d.ProductID
+having count(distinct h.CustomerID) <= 3
+
+SELECT distinct d.ProductID
+FROM Sales.SalesOrderDetail as d
+WHERE d.SalesOrderID in (
+    SELECT distinct h1.SalesOrderID
+    FROM Sales.SalesOrderHeader as h1 INNER JOIN
+    Sales.SalesOrderDetail as d1
+    ON h1.SalesOrderID = d1.SalesOrderID inner join
+    Production.Product as p
+    ON d1.ProductID = p.ProductID
+    group by h1.SalesOrderID
+    having max(p.ListPrice) in (
+        SELECT MAX(p2.ListPrice)
+        FROM Production.Product as p2 INNER JOIN
+        Production.ProductSubcategory as sb
+        ON sb.ProductSubcategoryID = p2.ProductSubcategoryID inner join
+        Production.ProductCategory as c
+        ON c.ProductCategoryID = sb.ProductCategoryID
+        GROUP BY  c.ProductCategoryID
+    )
+)
+
+
+SELECT h1.CustomerID
+FROM Sales.SalesOrderHeader as h1
+WHERE h1.CustomerID IN (
+    SELECT h2.CustomerID
+    FROM Sales.SalesOrderHeader as h2 INNER JOIN
+    Sales.SalesOrderDetail as d2
+    ON h2.SalesOrderID = d2.SalesOrderID
+    GROUP BY h2.CustomerID, h2.SalesOrderID
+    having count(d2.ProductID) >= 3
+)
+GROUP BY h1.CustomerID
+HAVING COUNT(distinct h1.SalesOrderID) >= 2
+
+
+
+SELECT h.SalesOrderID
+FROM Sales.SalesOrderHeader as h INNER JOIN
+SALES.SalesOrderDetail AS d
+ON h.SalesOrderID = d.SalesOrderID
+WHERE d.ProductID in (
+    SELECT d1.ProductID
+    FROM Sales.SalesOrderDetail as d1 INNER JOIN
+    Sales.SalesOrderHeader as h1
+    ON d1.SalesOrderID = h1.SalesOrderID
+    GROUP BY d1.ProductID, h1.CustomerID
+    HAVING COUNT(distinct h1.SalesOrderID) = 2
+)
+
+
+
+SELECT distinct d.ProductID
+FROM Sales.SalesOrderDetail as d
+WHERE d.ProductID in  (
+    SELECT DISTINCT d1.ProductID
+    FROM Sales.SalesOrderDetail as d1 INNER JOIN
+    Sales.SalesOrderHeader as h1
+    ON d1.SalesOrderID = h1.SalesOrderID
+    group by d1.ProductID
+    HAVING COUNT(distinct h1.CustomerID) >= 3
+)
+
+
+SELECT subc.ProductSubcategoryID
+FROM Production.ProductSubcategory as subc INNER JOIN
+Production.Product as p
+ON p.ProductSubcategoryID = subc.ProductSubcategoryID
+WHERE p.ProductID IN (
+    SELECT d.ProductID
+    FROM Sales.SalesOrderDetail as d
+    GROUP BY  d.ProductID
+    HAVING COUNT(distinct  d.SalesOrderID) > 3
+)
+GROUP BY subc.ProductSubcategoryID
+HAVING COUNT(distinct p.ProductID) > 3
+
+
+SELECT d1.ProductID
+FROM Sales.SalesOrderDetail as d1 INNER JOIN
+Sales.SalesOrderHeader as h1
+ON d1.SalesOrderID = h1.SalesOrderID
+WHERE h1.CustomerID in (
+    SELECT h2.CustomerId
+    FROM Sales.SalesOrderHeader as h2 INNER JOIN
+    Sales.SalesOrderDetail as d2
+    ON h2.SalesOrderID = d2.SalesOrderID
+    WHERE d2.ProductID = d1.ProductID
+    GROUP BY h2.CustomerId
+    HAVING COUNT(h2.SalesOrderID) >= 2
+)
+GROUP BY d1.ProductID
+Having COUNT(d1.SalesOrderID) <= 3
+

@@ -1,0 +1,93 @@
+SELECT p.Name, f.Name
+FROM Production.Product AS p INNER JOIN
+Production.ProductSubcategory AS s
+ON p.ProductSubcategoryID = s.ProductCategoryID INNER JOIN
+Production.ProductCategory as f
+ON s.ProductCategoryID = f.ProductCategoryID
+WHERE p.Color='RED' AND p.ListPrice >= 100
+
+SELECT f.Name, COUNT(s.ProductID) AS 'AMOUNT'
+FROM Production.Product as s INNER JOIN
+Production.ProductSubcategory as p
+ON s.ProductSubcategoryID = p.ProductSubcategoryID INNER JOIN
+Production.ProductCategory as f
+ON p.ProductCategoryID = f.ProductCategoryID
+GROUP BY f.Name
+
+SELECT s.Name, COUNT(p.ProductID)
+FROM Production.ProductSubcategory as s INNER JOIN
+Production.Product as p
+ON s.ProductSubcategoryID = p.ProductSubcategoryID
+GROUP BY  s.Name
+
+SELECT TOP 3 s.Name, COUNT(p.ProductID) as 'AMOUNT'
+FROM Production.Product as p INNER JOIN
+Production.ProductSubcategory as s
+ON p.ProductSubcategoryID = s.ProductSubcategoryID
+GROUP BY s.Name
+ORDER BY AMOUNT desc
+
+SELECT TOP 1 s.Name, p.ListPrice
+FROM Production.Product as p INNER JOIN
+PRODUCTION.ProductSubcategory AS s
+ON p.ProductSubcategoryID = s.ProductSubcategoryID
+WHERE p.Color = 'RED'
+ORDER BY p.ListPrice desc
+
+SELECT v.Name, COUNT(f.ProductID)
+FROM Purchasing.ProductVendor as p INNER JOIN
+Purchasing.Vendor as v
+ON p.BusinessEntityID = v.BusinessEntityID INNER JOIN
+Production.Product as F
+ON p.ProductID = f.ProductID
+GROUP BY v.Name
+
+SELECT f.Name, COUNT(v.Name) as 'AMOUNT'
+FROM Purchasing.ProductVendor as p INNER JOIN
+Purchasing.Vendor as v
+ON p.BusinessEntityID = v.BusinessEntityID INNER JOIN
+Production.Product as F
+ON p.ProductID = f.ProductID
+GROUP BY f.Name
+HAVING COUNT(v.Name) >= 2
+
+SELECT TOP 1 p.Name, SUM(s.OrderQty) AS 'AMOUNT'
+FROM Production.Product as p INNER JOIN
+Sales.SalesOrderDetail as S ON
+p.ProductID = s.ProductID
+GROUP BY p.Name
+ORDER BY AMOUNT desc
+
+SELECT TOP 1 f.Name, COUNT(q.OrderQty) as 'AMOUNT'
+FROM Production.Product as p INNER JOIN
+Production.ProductSubcategory as s
+ON p.ProductSubcategoryID = s.ProductSubcategoryID INNER JOIN
+Production.ProductCategory as f
+ON s.ProductCategoryID = f.ProductCategoryID INNER JOIN
+Sales.SalesOrderDetail as q
+ON p.ProductID = q.ProductID
+GROUP BY f.Name
+ORDER BY AMOUNT desc
+
+SELECT c.Name, COUNT(s.ProductSubcategoryID), COUNT(p.ProductID)
+FROM Production.Product as p INNER JOIN
+Production.ProductSubcategory as s
+ON p.ProductSubcategoryID = s.ProductSubcategoryID INNER JOIN
+Production.ProductCategory as c
+ON s.ProductCategoryID = c.ProductCategoryID
+GROUP BY c.Name
+
+SELECT f.CreditRating, COUNT(p.ProductID)
+FROM Production.Product as p INNER JOIN
+Purchasing.ProductVendor as v
+ON p.ProductID = v.ProductID INNER JOIN
+Purchasing.Vendor as f
+ON v.BusinessEntityID = f.BusinessEntityID
+GROUP BY f.CreditRating
+
+
+
+
+
+
+

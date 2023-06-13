@@ -1,0 +1,118 @@
+
+SELECT tmp.a, AVG(CAST(tmp.b AS Float))
+FROM (
+    SELECT h.CustomerID AS a , COUNT(d.ProductID) as b
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail as d
+    ON h.SalesOrderID = d.SalesOrderID
+    GROUP BY h.CustomerID, h.SalesOrderID ) tmp
+GROUP BY tmp.a
+
+
+WITH tmp(a, b)
+AS (
+    SELECT h.CustomerID, COUNT(d.ProductID)
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail as d
+    ON d.SalesOrderID = h.SalesOrderID
+    GROUP BY h.CustomerID, h.SalesOrderID
+)
+SELECT tmp.a, AVG(CAST(tmp.b AS Float))
+FROM tmp
+GROUP BY tmp.a
+
+
+
+WITH 
+SalesPerCustomer (CustomerID, SalesCount) AS
+(
+    SELECT DISTINCT CustomerID, COUNT(SalesOrderID)
+    FROM Sales.SalesOrderHeader
+    GROUP BY CustomerID
+),
+ProductsPerCustomer (CustomerID, ProductID, SalesCount) AS
+(
+SELECT soh.CustomerID, sod.ProductID, COUNT(DISTINCT soh.SalesOrderID)
+FROM Sales.SalesOrderDetail AS sod
+JOIN Sales.SalesOrderHeader AS soh
+ON sod.SalesOrderID = soh.SalesOrderID
+GROUP BY soh.CustomerID, sod.ProductID
+)
+SELECT t1.CustomerID, t2.ProductID, CAST(t2.SalesCount AS FLOAT) / CAST(t1.SalesCount AS Float)
+FROM ProductsPerCustomer AS t2
+INNER JOIN SalesPerCustomer AS t1
+ON t2.CustomerID = t1.customerID
+
+
+WITH buy(product, amount)
+AS (
+    SELECT d.ProductID, COUNT(d.ProductID)
+    FROM Sales.SalesOrderDetail as d
+    GROUP BY d.ProductID
+),
+customers(product, amount) as (
+    SELECT d.ProductID, COUNT(distinct h.CustomerID)
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail AS d ON
+    h.SalesOrderID = d.SalesOrderID
+    GROUP BY d.ProductID
+)
+SELECT buy.product, buy.amount, customers.amount
+FROM buy INNER JOIN
+customers on buy.product = customers.product
+GROUP BY buy.product, buy.amount, customers.amount
+
+
+
+WITH maxValue(customer, max) AS (
+    SELECT h.CustomerID, MAX(d.UnitPrice)
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail as d ON
+    d.SalesOrderID = h.SalesOrderID
+    GROUP BY h.CustomerID
+
+),
+minValue(customer, min) AS  (
+     SELECT h.CustomerID, MIN(d.UnitPrice)
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail as d ON
+    d.SalesOrderID = h.SalesOrderID
+    GROUP BY h.CustomerID
+)
+select maxValue.customer, maxValue.max, minValue.min
+FROM maxValue INNER JOIN
+minValue On maxValue.customer = minValue.customer
+
+
+
+with numberOfGoods(customer, salesId, amount) as (
+
+    SELECT h.CustomerID, h.SalesOrderID, COUNT(d.ProductID)
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail as d
+    ON h.SalesOrderID = d.SalesOrderID
+    group by h.CustomerID, h.SalesOrderID
+)
+SELECT numberOfGoods.customer, COUNT(numberOfGoods.amount), COUNT(distinct numberOfGoods.amount)
+FROM numberOfGoods
+GROUP BY numberOfGoods.customer
+HAVING COUNT(numberOfGoods.amount) = COUNT(distinct numberOfGoods.amount)
+
+
+
+
+with goods(customer, product, amount) as (
+    SELECT h.CustomerID, d.ProductID, COUNT(distinct d.SalesOrderID)
+    FROM Sales.SalesOrderHeader as h INNER JOIN
+    Sales.SalesOrderDetail as d
+    ON d.SalesOrderID = h.SalesOrderID
+    GROUP BY h.CustomerID, d.ProductID
+)
+SELECT goods.customer
+FROM goods
+GROUP BY goods.customer
+HAVING MIN(goods.amount) = 2
+
+
+
+
